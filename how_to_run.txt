@@ -1,0 +1,2 @@
+streamlit run text_to_speech_app.py
+

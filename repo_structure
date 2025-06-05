@@ -1,0 +1,6 @@
+
+text-to-speech-web-app/
+├── text_to_speech_app.py
+├── requirements.txt
+├── README.md
+└── .gitignore
