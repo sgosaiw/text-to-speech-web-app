@@ -1,5 +1,2 @@
-###`requirements.txt`
-```text
 streamlit
 edge-tts
-
