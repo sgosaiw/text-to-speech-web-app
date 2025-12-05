@@ -31,6 +31,14 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
+### Option B: Conda (Alternative)
+If you prefer using [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html):
+
+```bash
+conda create -n tts-app python=3.9
+conda activate tts-app
+```
+
 ### 3. Install Dependencies
 Install the required packages (`streamlit`, `edge-tts`):
 ```bash
