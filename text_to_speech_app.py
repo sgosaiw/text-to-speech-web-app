@@ -71,16 +71,9 @@ def main():
                 try:
                     with st.spinner("Generating audio..."):
                         # Create a temporary file
-                        # We use delete=False because Windows can't open a temp file acting as a file object twice easily 
-                        # so we close it and let Streamlit/User open it by path.
                         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{output_format}") as tmp_file:
                             tmp_path = tmp_file.name
                         
-                        # Run async generation
-                        async def generate():
-                            # Sanitize text to prevent SSML errors
-                            clean_text = xml.sax.saxutils.escape(text)
-
                         # Run async generation
                         async def generate():
                             # Reverted to plain text communication as per user request
@@ -90,30 +83,39 @@ def main():
                         
                         asyncio.run(generate())
                         
-                        # Success message
-                        st.success("✅ Generation Complete!")
-                        
-                        # Audio player
-                        st.audio(tmp_path, format=f"audio/{output_format}")
-                        
-                        # Download button
+                        # Read file data into memory for persistence
                         with open(tmp_path, "rb") as f:
-                            data = f.read()
-                            st.download_button(
-                                label=f"⬇️ Download {output_format.upper()}",
-                                data=data,
-                                file_name=f"speech.{output_format}",
-                                mime=f"audio/{output_format}",
-                                use_container_width=True
-                            )
+                            audio_bytes = f.read()
                         
-                        # Clean up temp file (optional, but good practice if not needed anymore, 
-                        # though here we leave it for the session or until OS cleans up)
-                        # os.unlink(tmp_path) # Don't unlink immediately if we want to play it multiple times
+                        # Store in session state
+                        st.session_state['audio_data'] = audio_bytes
+                        st.session_state['audio_format'] = output_format
+                        st.session_state['success_message'] = "✅ Generation Complete!"
                         
+                        # Clean up temp file
+                        try:
+                            os.remove(tmp_path)
+                        except:
+                            pass
+
                 except Exception as e:
                     st.error(f"❌ Error generating speech: {str(e)}")
-        else:
+        
+        # Check session state to render output (PERSISTENT across reruns)
+        if 'audio_data' in st.session_state:
+            st.success(st.session_state.get('success_message', "Ready"))
+            
+            fmt = st.session_state['audio_format']
+            st.audio(st.session_state['audio_data'], format=f"audio/{fmt}")
+            
+            st.download_button(
+                label=f"⬇️ Download {fmt.upper()}",
+                data=st.session_state['audio_data'],
+                file_name=f"speech.{fmt}",
+                mime=f"audio/{fmt}",
+                use_container_width=True
+            )
+        elif not generate_btn and 'audio_data' not in st.session_state:
             st.info("👈 Adjust settings in the sidebar and click 'Generate Speech' to start.")
 
 if __name__ == "__main__":
